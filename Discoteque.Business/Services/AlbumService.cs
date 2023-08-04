@@ -22,11 +22,21 @@ public class AlbumService : IAlbumService
     /// </summary>
     /// <param name="album">A new album entity</param>
     /// <returns>The created album with an Id assigned</returns>
-    public async Task<Album> CreateAlbum(Album album)
-    {
+    public async Task<Album> CreateAlbum(Album album){
+        if(!(album.Year >= 1905 && album.Year <=2023)){
+            throw new ArgumentException("Year must be between 1905 and 2023");
+        }
+        if(album.Cost < 0 && album.Cost.ToString().Split('.')[1].Length > 2){
+            throw new ArgumentException("The cost of the album must be greater than zero and have just two decimals."); 
+        }
+        var albumName = album.Name.ToLower();
+        if(albumName.Contains("revolución") || albumName.Contains("poder") || albumName.Contains("amor") || albumName.Contains("guerra")){
+            throw new ArgumentException("The album name can't contain any of these words: 'Revolución', 'Poder', 'Amor', 'Guerra'.");
+        }
         var newAlbum = new Album{
             Name = album.Name,
             ArtistId = album.ArtistId,
+            Cost = album.Cost,
             Genre = album.Genre,
             Year = album.Year
         };

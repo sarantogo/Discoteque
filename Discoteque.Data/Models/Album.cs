@@ -14,6 +14,8 @@ public  class Album : BaseEntity<int>
     /// Year the albums was published
     /// </summary>
     public int Year { get; set; }
+
+    public double Cost { get; set; } = 50000;
     
     /// <summary>
     /// The <see cref="Genres" /> the album belongs to 

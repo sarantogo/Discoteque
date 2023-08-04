@@ -23,6 +23,8 @@ builder.Services.AddDbContext<DiscotequeContext>(
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IArtistsService, ArtistsService>();
 builder.Services.AddScoped<IAlbumService, AlbumService>();
+builder.Services.AddScoped<ISongService, SongService>();
+builder.Services.AddScoped<ITourService, TourService>();
 
 var app = builder.Build();
 PopulateDb(app);
@@ -55,7 +57,8 @@ async void PopulateDb(WebApplication app)
     {
         var artistService = scope.ServiceProvider.GetRequiredService<IArtistsService>();
         var albumService = scope.ServiceProvider.GetRequiredService<IAlbumService>();
-
+        var songService = scope.ServiceProvider.GetRequiredService<ISongService>();
+        var tourService = scope.ServiceProvider.GetRequiredService<ITourService>();
         // Artists
         await artistService.CreateArtist(new Discoteque.Data.Models.Artist{
             Id = 1,
@@ -512,6 +515,134 @@ async void PopulateDb(WebApplication app)
             Name = "Jose",
             ArtistId = 10,
             Genre = Discoteque.Data.Models.Genres.Urban
+        });
+        #endregion
+
+        #region Songs
+        await songService.CreateSong(new Discoteque.Data.Models.Song{
+            Id = 1,
+            Name = "Alive",
+            Duration = 4.23,
+            AlbumId = 1,
+        });
+        await songService.CreateSong(new Discoteque.Data.Models.Song{
+            Name = "Bird set free",
+            Duration = 4,
+            AlbumId = 1,
+        });
+        await songService.CreateSong(new Discoteque.Data.Models.Song{
+            Name = "Provenza",
+            Duration = 3.50,
+            AlbumId = 2,
+        });
+        await songService.CreateSong(new Discoteque.Data.Models.Song{
+            Name = "Ocean Drive",
+            Duration = 3,
+            AlbumId = 2,
+        });
+        await songService.CreateSong(new Discoteque.Data.Models.Song{
+            Name = "Master of Puppets",
+            Duration = 6.43,
+            AlbumId = 3,
+        });
+        await songService.CreateSong(new Discoteque.Data.Models.Song{
+            Name = "Unforgiven",
+            Duration = 5.10,
+            AlbumId = 3,
+        });
+        await songService.CreateSong(new Discoteque.Data.Models.Song{
+            Name = "Dulce introducción al caos",
+            Duration = 6,
+            AlbumId = 4,
+        });
+        await songService.CreateSong(new Discoteque.Data.Models.Song{
+            Name = "Locura transitoria",
+            Duration = 7.16,
+            AlbumId = 4,
+        });
+        await songService.CreateSong(new Discoteque.Data.Models.Song{
+            Name = "I miss you",
+            Duration = 4.20,
+            AlbumId = 5,
+        });
+        await songService.CreateSong(new Discoteque.Data.Models.Song{
+            Name = "Stay together for the kids",
+            Duration = 4.34,
+            AlbumId = 5,
+        });
+        #endregion
+
+        #region Tours
+        await tourService.CreateTour(new Discoteque.Data.Models.Tour{
+            Id = 1,
+            Name = "Latinoamerica tour",
+            City = "Medellín",
+            Date = DateOnly.Parse("2023-11-05"),
+            isSoldOut = true,
+            ArtistId = 1
+        });
+        await tourService.CreateTour(new Discoteque.Data.Models.Tour{
+            Name = "Worldwide tour",
+            City = "Los Angeles",
+            Date = DateOnly.Parse("2024-03-11"),
+            isSoldOut = false,
+            ArtistId = 2
+        });
+        await tourService.CreateTour(new Discoteque.Data.Models.Tour{
+            Name = "Tusa tour",
+            City = "Barcelona",
+            Date = DateOnly.Parse("2023-09-23"),
+            isSoldOut = true,
+            ArtistId = 3
+        });
+        await tourService.CreateTour(new Discoteque.Data.Models.Tour{
+            Name = "Tour de la marimonda",
+            City = "Barranquilla",
+            Date = DateOnly.Parse("2023-12-15"),
+            isSoldOut = false,
+            ArtistId = 4
+        });
+        await tourService.CreateTour(new Discoteque.Data.Models.Tour{
+            Name = "La tierra del olvido tour",
+            City = "Buenos Aires",
+            Date = DateOnly.Parse("2024-06-07"),
+            isSoldOut = true,
+            ArtistId = 5
+        });
+        await tourService.CreateTour(new Discoteque.Data.Models.Tour{
+            Name = "Paracos tour",
+            City = "Bogotá",
+            Date = DateOnly.Parse("2023-10-18"),
+            isSoldOut = false,
+            ArtistId = 6
+        });
+        await tourService.CreateTour(new Discoteque.Data.Models.Tour{
+            Name = "Nadie le importa tour",
+            City = "Quito",
+            Date = DateOnly.Parse("2025-01-22"),
+            isSoldOut = true,
+            ArtistId = 7
+        });
+        await tourService.CreateTour(new Discoteque.Data.Models.Tour{
+            Name = "Princesa tour",
+            City = "Medellín",
+            Date = DateOnly.Parse("2023-11-10"),
+            isSoldOut = true,
+            ArtistId = 8
+        });
+        await tourService.CreateTour(new Discoteque.Data.Models.Tour{
+            Name = "Princesa tour",
+            City = "Miami",
+            Date = DateOnly.Parse("2023-11-07"),
+            isSoldOut = false,
+            ArtistId = 8
+        });
+        await tourService.CreateTour(new Discoteque.Data.Models.Tour{
+            Name = "Guitarra tour",
+            City = "Bogotá",
+            Date = DateOnly.Parse("2024-02-20"),
+            isSoldOut = true,
+            ArtistId = 9
         });
         #endregion
     }

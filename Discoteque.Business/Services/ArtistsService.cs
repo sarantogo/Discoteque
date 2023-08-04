@@ -15,6 +15,9 @@ public class ArtistsService : IArtistsService
 
     public async Task<Artist> CreateArtist(Artist artist)
     {
+        if(artist.Name.Length > 100){
+            throw new ArgumentException("Artist name must be maximum 100 characters.");
+        }
         await _unitOfWork.ArtistRepository.AddAsync(artist);
         await _unitOfWork.SaveAsync();
         return artist;
