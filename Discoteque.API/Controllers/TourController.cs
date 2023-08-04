@@ -1,6 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
-using Discoteque.Data.Services;
+using System.Net;
+using System;
+using Discoteque.Business.IServices;
 using Discoteque.Data.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Discoteque.API.Controllers;
 
@@ -16,60 +18,61 @@ public class TourController : ControllerBase {
     }
 
     [HttpGet]
-    [Route("GetTours")]
-    public async Task<IActionResult> GetTours(bool loadArtist) {
-       var tours = await _tourService.GetAllToursAsync(loadArtist);
-       return Ok(tours);
+    [Route("GetTourById")]
+    public async Task<IActionResult> GetTourById(int id)
+    {
+        var tour = await _tourService.GetTourById(id);
+        return tour != null ? Ok(tour) : StatusCode(StatusCodes.Status404NotFound, "Tour not found");
     }
 
     [HttpGet]
-    [Route("GetTourById")]
-    public async Task<IActionResult> GetTourById(int id) {
-        var tour = await _tourService.GetTourById(id);
-        return Ok(tour);
+    [Route("GetTours")]
+    public async Task<IActionResult> GetTours()
+    {
+        var tours = await _tourService.GetToursAsync();
+        return tours.Any() ? Ok(tours) : StatusCode(StatusCodes.Status404NotFound, "There were no tours found");
+    }
+
+    [HttpGet]
+    [Route("GetToursByYear")]
+    public async Task<IActionResult> GetToursByYear(int year)
+    {
+        var tours = await _tourService.GetToursByYear(year);
+        return tours.Any() ? Ok(tours) : StatusCode(StatusCodes.Status404NotFound, "There were no tours found for this year");
     }
 
     [HttpGet]
     [Route("GetToursByArtist")]
-    public async Task<IActionResult> GetToursByArtist(string artistName) {
-        var tours = await _tourService.GetToursByArtist(artistName);
-        return tours.Any() ? Ok(tours) : StatusCode(StatusCodes.Status404NotFound, "There was no tours found for that artist.");
+    public async Task<IActionResult> GetToursByArtist(int artistId)
+    {
+        var tours = await _tourService.GetToursByArtist(artistId);
+        return tours.Any() ? Ok(tours) : StatusCode(StatusCodes.Status404NotFound, "There were no tours by this artist");
     }
 
     [HttpGet]
-    [Route("GetToursBySoldOut")]
-    public async Task<IActionResult> GetToursBySoldOut(bool soldOut) {
-        var tours = await _tourService.GetToursBySoldOut(soldOut);
-        return tours.Any() ? Ok(tours) : StatusCode(StatusCodes.Status404NotFound, "There was no tours sold out.");
+    [Route("GetToursByCity")]
+    public async Task<IActionResult> GetToursByCity(string city)
+    {
+        var tours = await _tourService.GetToursByCity(city);
+        return tours.Any() ? Ok(tours) : StatusCode(StatusCodes.Status404NotFound, "No tours were found for this city");
     }
 
     [HttpPost]
     [Route("CreateTour")]
-    public async Task<IActionResult> CreateTour(Tour tour) {
-        try
-        {
-            var newTour = await _tourService.CreateTour(tour);
-            return Ok(newTour);
-        }
-        catch (System.Exception e)
-        {
-            
-            return StatusCode(StatusCodes.Status400BadRequest, e.Message);
-        }
-        
+    public async Task<IActionResult> CreateTour(Tour tour)
+    {
+        var createdTour = await _tourService.CreateTour(tour);
+        return createdTour != null ? Ok(createdTour) : StatusCode(StatusCodes.Status404NotFound, "The tour was not created");
     }
 
-    [HttpDelete]
-    [Route("DeleteTour")]
-    public async Task<IActionResult> DeleteTour(int id){
-        var result = await _tourService.DeleteTour(id);
-        return Ok(result);
-    }
-
-    [HttpPut]
+    [HttpPatch]
     [Route("UpdateTour")]
-    public async Task<IActionResult> UpdateTour(Tour tour){
+    public async Task<IActionResult> UpdateTour(Tour tour)
+    {
         var updatedTour = await _tourService.UpdateTour(tour);
-        return Ok(updatedTour);
+        return updatedTour != null ? Ok(updatedTour)    : StatusCode(StatusCodes.Status404NotFound, "The tour was not updated");
     }
+
+
+
 }

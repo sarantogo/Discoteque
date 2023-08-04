@@ -1,79 +1,72 @@
-using Discoteque.Data.Services;
-using Discoteque.Data.Models;
+using Discoteque.Business.IServices;
+using Discoteque.Business.Utils;
 using Discoteque.Data;
+using Discoteque.Data.Models;
+using Discoteque.Data.Dto;
+using Microsoft.EntityFrameworkCore.Query;
+using System.Net;
 
 namespace Discoteque.Business.Services;
 
-public class TourService : ITourService {
+public class TourService : ITourService
+{
+    private readonly IUnitOfWork _unitOfWork;
 
-    private IUnitOfWork _UnitOfWork;
-
-    public TourService(IUnitOfWork unitOfWork) {
-        _UnitOfWork = unitOfWork;
+    public TourService(IUnitOfWork unitOfWork)
+    {
+        _unitOfWork = unitOfWork;
     }
-
-    public async Task <IEnumerable<Tour>> GetAllToursAsync(bool loadArtist) {
-
-        IEnumerable<Tour> tours;
-
-        if(loadArtist){
-            tours = await _UnitOfWork.TourRepository.GetAllAsync(null, s => s.OrderBy(s => s.Id), new Artist().GetType().Name);
+    
+    public async Task<BaseMessage<Tour>> CreateTour(Tour tour)
+    {
+        try
+        {
+            var artist = await _unitOfWork.ArtistRepository.FindAsync(tour.ArtistId);
+            if (tour.Date.Year <= 2021 || artist == null)
+            {
+                return Utilities.BuildResponse<Tour>(HttpStatusCode.NotFound, BaseMessageStatus.BAD_REQUEST_400);
+            }
+            
+            await _unitOfWork.TourRepository.AddAsync(tour);
+            await _unitOfWork.SaveAsync();
         }
-        else{
-            tours = await _UnitOfWork.TourRepository.GetAllAsync();
+        catch (Exception)
+        {
+            return Utilities.BuildResponse<Tour>(HttpStatusCode.InternalServerError, BaseMessageStatus.INTERNAL_SERVER_ERROR_500);
         }
-
-        return tours;
+        
+        return Utilities.BuildResponse(HttpStatusCode.OK, BaseMessageStatus.OK_200, new List<Tour>(){tour});
     }
 
-    public async Task<Tour> GetTourById(int id) {
-        return await _UnitOfWork.TourRepository.FindAsync(id);
+    public async Task<Tour> GetTourById(int id)
+    {
+        return await _unitOfWork.TourRepository.FindAsync(id);
     }
 
-    public async Task<IEnumerable<Tour>> GetToursByArtist(string artistName) {
-        return await _UnitOfWork.TourRepository.GetAllAsync(s => s.Artist.Name == artistName, s => s.OrderBy(s => s.Id), new Artist().GetType().Name);
+    public async Task<IEnumerable<Tour>> GetToursAsync()
+    {
+        return await _unitOfWork.TourRepository.GetAllAsync();
     }
 
-    public async Task<IEnumerable<Tour>> GetToursBySoldOut(bool soldOut) {
-        return await _UnitOfWork.TourRepository.GetAllAsync(s => s.isSoldOut == true, s => s.OrderBy(s => s.Id), "");
+    public async Task<IEnumerable<Tour>> GetToursByArtist(int artistId)
+    {
+        return await _unitOfWork.TourRepository.GetAllAsync(x => x.ArtistId == artistId, includeProperties: new Artist().GetType().Name);
     }
 
-    public async Task<Tour> CreateTour(Tour tour) {
-
-        DateOnly parsedDate;
-        bool isSuccess = DateOnly.TryParse(tour.Date.ToString(), out parsedDate);
-        if(!isSuccess) {
-            throw new Exception("Invalid date format.");
-        }
-        var validDate = tour.Date.Year > 2021;
-
-        if(!validDate){
-            throw new ArgumentException("The tour date must be greater than 2021.");
-        }
-
-        Tour newTour = new Tour {
-            Name = tour.Name,
-            City = tour.City,
-            Date = tour.Date,
-            isSoldOut = tour.isSoldOut,
-            ArtistId = tour.ArtistId,
-        };
-
-        await _UnitOfWork.TourRepository.AddAsync(newTour);
-        await _UnitOfWork.SaveAsync();
-        return newTour;
+    public async Task<IEnumerable<Tour>> GetToursByCity(string city)
+    {
+        return await _unitOfWork.TourRepository.GetAllAsync(x => x.Equals(city));
     }
 
-    public async Task<string> DeleteTour(int id) {
-        await _UnitOfWork.TourRepository.Delete(id);
-        await _UnitOfWork.SaveAsync();
-        return string.Format("Tour number {0} deleted", id);
+    public async Task<IEnumerable<Tour>> GetToursByYear(int year)
+    {
+        return await _unitOfWork.TourRepository.GetAllAsync(x => x.Date.Year == year);
     }
 
-    public async Task<Tour> UpdateTour(Tour tour) {
-        await _UnitOfWork.TourRepository.Update(tour);
-        await _UnitOfWork.SaveAsync();
+    public async Task<Tour> UpdateTour(Tour tour)
+    {
+        await _unitOfWork.TourRepository.Update(tour);
+        await _unitOfWork.SaveAsync();
         return tour;
     }
-
 }

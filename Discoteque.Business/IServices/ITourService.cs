@@ -1,19 +1,17 @@
+using System;
 using Discoteque.Data.Models;
-namespace Discoteque.Data.Services;
+using Discoteque.Data.Dto;
 
-public interface ITourService {
+namespace Discoteque.Business.IServices;
 
-    Task <IEnumerable<Tour>> GetAllToursAsync(bool loadArtist);
-
+public interface ITourService
+{
+    Task<IEnumerable<Tour>> GetToursAsync();
     Task<Tour> GetTourById(int id);
-
-    Task<IEnumerable<Tour>> GetToursByArtist(string artistName);
-
-    Task<IEnumerable<Tour>> GetToursBySoldOut(bool soldOut);
-
-    Task<Tour> CreateTour(Tour tour);
-
-    Task<string> DeleteTour(int id);
-
+    Task<IEnumerable<Tour>> GetToursByArtist(int ArtistId);
+    Task<IEnumerable<Tour>> GetToursByYear(int year);
+    Task<IEnumerable<Tour>> GetToursByCity(string city);
+    Task<BaseMessage<Tour>> CreateTour(Tour tour);
     Task<Tour> UpdateTour(Tour tour);
+
 }

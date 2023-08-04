@@ -1,87 +1,87 @@
-using Discoteque.Data.Services;
-using Discoteque.Data.Models;
+using System.Net;
+using Discoteque.Business.IServices;
+using Discoteque.Business.Utils;
 using Discoteque.Data;
+using Discoteque.Data.Models;
+using Discoteque.Data.Dto;
 
 namespace Discoteque.Business.Services;
 
-public class SongService : ISongService {
+public class SongService : ISongService
+{
+    private readonly IUnitOfWork _unitOfWork;
 
-    private IUnitOfWork _UnitOfWork;
-
-    public SongService(IUnitOfWork unitOfWork) {
-        _UnitOfWork = unitOfWork;
+    public SongService(IUnitOfWork unitOfWork)
+    {
+        _unitOfWork = unitOfWork;
     }
 
-    public async Task <IEnumerable<Song>> GetAllSongsAsync(bool loadAlbum) {
-
-        IEnumerable<Song> songs;
-
-        if(loadAlbum){
-            songs = await _UnitOfWork.SongRepository.GetAllAsync(null, s => s.OrderBy(s => s.Id), new Album().GetType().Name);
+    public async Task<BaseMessage<Song>> CreateSong(Song newSong)
+    {
+        try
+        {         
+            var album = await _unitOfWork.AlbumRepository.FindAsync(newSong.AlbumId);
+            if (album == null)
+            {
+                return Utilities.BuildResponse<Song>(HttpStatusCode.NotFound, BaseMessageStatus.ALBUM_NOT_FOUND);
+            }
+            await _unitOfWork.SongRepository.AddAsync(newSong);
+            await _unitOfWork.SaveAsync();
         }
-        else{
-            songs = await _UnitOfWork.SongRepository.GetAllAsync();
-        }
+        catch (Exception ex)
+        {
+            return Utilities.BuildResponse<Song>(HttpStatusCode.InternalServerError, ex.Message);
+        } 
 
-        return songs;
+        return Utilities.BuildResponse(HttpStatusCode.OK, BaseMessageStatus.OK_200, new List<Song>(){newSong});       
     }
 
-    public async Task<Song> GetSongById(int id) {
-        return await _UnitOfWork.SongRepository.FindAsync(id);
-    }
-
-    public async Task<IEnumerable<Song>> GetSongsByAlbum(string albumName) {
-        return await _UnitOfWork.SongRepository.GetAllAsync(s => s.Album.Name == albumName, s => s.OrderBy(s => s.Id), new Album().GetType().Name);
-    }
-
-    public async Task<IEnumerable<Song>> GetSongsByDurationRange(double duration1, double duration2) {
-        return await _UnitOfWork.SongRepository.GetAllAsync(s => s.Duration >= duration1 && s.Duration <= duration2, s => s.OrderBy(s => s.Id), "");
-    }
-
-    public async Task<Song> CreateSong(Song song) {
-
-        var album = await _UnitOfWork.AlbumRepository.FindAsync(song.AlbumId);
-
-        if (album == null) {
-            throw new ArgumentException("Could not found album.");
-        }
-        Song newSong = new Song {
-            Name = song.Name,
-            Duration = song.Duration,
-            AlbumId = song.AlbumId,
-        };
-
-        await _UnitOfWork.SongRepository.AddAsync(newSong);
-        await _UnitOfWork.SaveAsync();
-        return newSong;
-    }
-
-    public async Task<IEnumerable<Song>> InsertSongs(List<Song> songs){
+    public async Task<BaseMessage<Song>> CreateSongsInBatch(List<Song> songs)
+    {
         try
         {
-        songs.ForEach(song => 
-        _UnitOfWork.SongRepository.AddAsync(song));
-        await _UnitOfWork.SaveAsync();
-        return songs;
+            foreach (var item in songs)
+            {
+                var album = await _unitOfWork.AlbumRepository.FindAsync(item.AlbumId);
+                if(album != null)
+                {
+                    await _unitOfWork.SongRepository.AddAsync(item);
+                }
+            }
+
+            await _unitOfWork.SaveAsync();
         }
-        catch (System.Exception e)
+        catch (Exception ex)
         {
-            
-            throw e;
+            return Utilities.BuildResponse<Song>(HttpStatusCode.InternalServerError, $"{BaseMessageStatus.INTERNAL_SERVER_ERROR_500} | {ex.Message}");
         }
-        
+        return Utilities.BuildResponse(HttpStatusCode.OK, BaseMessageStatus.OK_200, songs);
     }
 
-    public async Task<string> DeleteSong(int id) {
-        await _UnitOfWork.SongRepository.Delete(id);
-        await _UnitOfWork.SaveAsync();
-        return string.Format("Song number {0} deleted", id);
+    public async Task<Song> GetById(int id)
+    {
+        return await _unitOfWork.SongRepository.FindAsync(id);
     }
 
-    public async Task<Song> UpdateSong(Song song) {
-        await _UnitOfWork.SongRepository.Update(song);
-        await _UnitOfWork.SaveAsync();
+    public async Task<IEnumerable<Song>> GetSongsAsync()
+    {
+        return await _unitOfWork.SongRepository.GetAllAsync();
+    }
+
+    public async Task<IEnumerable<Song>> GetSongsByAlbum(int AlbumId)
+    {
+        return await _unitOfWork.SongRepository.GetAllAsync(x => x.AlbumId == AlbumId);
+    }
+
+    public async Task<IEnumerable<Song>> GetSongsByYear(int year)
+    {
+        return await _unitOfWork.SongRepository.GetAllAsync(x => x.Album.Year == year, includeProperties: new Album().GetType().Name);
+    }
+
+    public async Task<Song> UpdateSong(Song song)
+    {
+        await _unitOfWork.SongRepository.Update(song);
+        await _unitOfWork.SaveAsync();
         return song;
     }
-
 }

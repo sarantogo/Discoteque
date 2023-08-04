@@ -1,21 +1,16 @@
+using System;
 using Discoteque.Data.Models;
-namespace Discoteque.Data.Services;
+using Discoteque.Data.Dto;
 
-public interface ISongService {
+namespace Discoteque.Business.IServices;
 
-    Task <IEnumerable<Song>> GetAllSongsAsync(bool loadAlbum);
-
-    Task<Song> GetSongById(int id);
-
-    Task<IEnumerable<Song>> GetSongsByAlbum(string albumName);
-
-    Task<IEnumerable<Song>> GetSongsByDurationRange(double duration1, double duration2);
-
-    Task<Song> CreateSong(Song song);
-
-    Task<IEnumerable<Song>> InsertSongs(List<Song> songs);
-
-    Task<string> DeleteSong(int id);
-
+public interface ISongService
+{
+    Task<IEnumerable<Song>> GetSongsAsync();
+    Task<IEnumerable<Song>> GetSongsByAlbum(int AlbumId);
+    Task<IEnumerable<Song>> GetSongsByYear(int year);
+    Task<Song> GetById(int id);
+    Task<BaseMessage<Song>> CreateSong(Song Song);
+    Task<BaseMessage<Song>> CreateSongsInBatch(List<Song> songs);
     Task<Song> UpdateSong(Song song);
 }
