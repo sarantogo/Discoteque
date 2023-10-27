@@ -6,7 +6,7 @@ public class Tour : BaseEntity<int>
 {
     public string Name { get; set;} = "";
     public string City {get;set;} = "";
-    public DateTime TourDate { get; set;} = DateTime.Now;
+    public DateTime Date { get; set;} = DateTime.Now;
     public bool IsSoldOut { get; set;} = false;
     
     [ForeignKey("Artist")]

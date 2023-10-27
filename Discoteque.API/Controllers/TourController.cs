@@ -8,12 +8,12 @@ namespace Discoteque.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class TourController : ControllerBase
-{
+
+public class TourController : ControllerBase {
+
     private readonly ITourService _tourService;
 
-    public TourController(ITourService tourService)
-    {
+    public TourController(ITourService tourService){
         _tourService = tourService;
     }
 

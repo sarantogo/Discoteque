@@ -22,7 +22,7 @@ public class TourService : ITourService
         try
         {
             var artist = await _unitOfWork.ArtistRepository.FindAsync(tour.ArtistId);
-            if (tour.TourDate.Year <= 2021 || artist == null)
+            if (tour.Date.Year <= 2021 || artist == null)
             {
                 return Utilities.BuildResponse<Tour>(HttpStatusCode.NotFound, BaseMessageStatus.BAD_REQUEST_400);
             }
@@ -60,7 +60,7 @@ public class TourService : ITourService
 
     public async Task<IEnumerable<Tour>> GetToursByYear(int year)
     {
-        return await _unitOfWork.TourRepository.GetAllAsync(x => x.TourDate.Year == year);
+        return await _unitOfWork.TourRepository.GetAllAsync(x => x.Date.Year == year);
     }
 
     public async Task<Tour> UpdateTour(Tour tour)

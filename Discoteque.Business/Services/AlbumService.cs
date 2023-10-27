@@ -28,9 +28,9 @@ public class AlbumService : IAlbumService
         var newAlbum = new Album{
             Name = album.Name,
             ArtistId = album.ArtistId,
+            Cost = album.Cost,
             Genre = album.Genre,
             Year = album.Year,
-            Cost = album.Cost,
         };
 
         try

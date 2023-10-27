@@ -4,7 +4,7 @@ namespace Discoteque.Data.Models;
 public class Song : BaseEntity<int>
 {
     public string Name { get; set; } = "";
-    public int Length { get; set; }
+    public double Duration { get; set; }
     
     [ForeignKey("Album")]
     public int AlbumId { get; set; }
